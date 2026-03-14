@@ -7,8 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import com.api.calendario.api_calendario.domain.entities.Festivo;
 
 public interface IFestivoRepository  extends JpaRepository<Festivo, Integer>{
-    @Query("SELECT c FROM Festivo c WHERE c.nombre LIKE '%'||?1||'%' ")
+    @Query("SELECT c FROM Festivo c WHERE c.nombre LIKE CONCAT('%',:nombre,'%') ")
     public List <Festivo> buscar(String nombre);
-
-
 }

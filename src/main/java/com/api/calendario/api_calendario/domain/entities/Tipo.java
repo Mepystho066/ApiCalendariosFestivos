@@ -11,7 +11,7 @@ public class Tipo {
     @Column(name="id")
     private int id;
     
-    @Column(name="tipo")
+    @Column(name="tipo", nullable = false)
     private String tipo;
     
     public Tipo(){} 

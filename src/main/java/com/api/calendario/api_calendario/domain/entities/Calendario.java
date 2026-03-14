@@ -1,5 +1,7 @@
 package com.api.calendario.api_calendario.domain.entities;
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -8,31 +10,31 @@ public class Calendario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "Secuencia_de_calendario")
-    @SequenceGenerator(name="Secuencia_de_calendario", sequenceName = "calendario_sencuencia", allocationSize = 1)
+    @SequenceGenerator(name="Secuencia_de_calendario", sequenceName = "calendario_secuencia", allocationSize = 1)
 
     @Column(name = "id")
     private int id;
 
-    @Column(name = "fecha")
-    private Date fecha; 
+    @Column(name = "fecha", nullable = false)
+    private LocalDate fecha; 
 
     @Column(name = "descripcion")
     private String descripcion;
 
     @ManyToOne
-    @JoinColumn(name = "idtipo",referencedColumnName = "id")
+    @JoinColumn(name = "idtipo",referencedColumnName = "id", nullable = false)
     @PrimaryKeyJoinColumn
     private Tipo tipo;
 
     @ManyToOne
-    @JoinColumn(name = "idpais",referencedColumnName = "id")
+    @JoinColumn(name = "idpais",referencedColumnName = "id", nullable = false)
     @PrimaryKeyJoinColumn
     private Pais pais;
 
 
     public Calendario(){}
     
-    public Calendario( Date fecha, Tipo tipo, String descripcion, Pais pais){
+    public Calendario( LocalDate fecha, Tipo tipo, String descripcion, Pais pais){
         this.fecha = fecha;
         this.tipo = tipo;
         this.descripcion = descripcion;
@@ -47,11 +49,11 @@ public class Calendario {
         this.id = id;
     }
 
-    public Date getFecha() {
+    public LocalDate getFecha() {
         return fecha;
     }
 
-    public void setFecha(Date fecha) {
+    public void setFecha(LocalDate fecha) {
         this.fecha = fecha;
     }
 

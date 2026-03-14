@@ -12,7 +12,7 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/festivo")
+@RequestMapping("api/festivo")
 public class FestivoController {
     
     public IFestivoService service;

@@ -24,7 +24,7 @@ public class TipoFestivoService implements ITipoFestivoService {
     }
 
     @Override
-    public TipoFestivo obtener(Long id) {
+    public TipoFestivo obtener(int id) {
         Optional <TipoFestivo> tipo = repository.findById(id);
         return tipo.isEmpty() ? null : tipo.get();
     }

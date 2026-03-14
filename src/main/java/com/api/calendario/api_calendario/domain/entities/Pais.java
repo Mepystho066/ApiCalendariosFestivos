@@ -12,7 +12,7 @@ public class Pais {
     @Column(name = "id")
     private int id; 
 
-    @Column(name = "nombre")
+    @Column(name = "nombre", nullable = false)
     private String nombre; 
     
     public Pais(){}

@@ -5,6 +5,7 @@ import com.api.calendario.api_calendario.infrastructure.repository.ICalendarioRe
 
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -30,6 +31,7 @@ public class CalendarioService implements ICalendarioService {
     public List<Calendario> buscar(String descripcion) {
         return repository.buscar(descripcion);
     }
+
 
 
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tipofestivo")
+@RequestMapping("api/tipofestivo")
 public class TipoFestivoController {
 
     public ITipoFestivoService service;
@@ -25,7 +25,7 @@ public class TipoFestivoController {
 
     }
     @RequestMapping(value = "/obtener/{id}", method=RequestMethod.GET)
-    public TipoFestivo obtener(@PathVariable("id") Long id) {
+    public TipoFestivo obtener(@PathVariable("id") int id) {
        return service.obtener(id);
     }
 
@@ -33,6 +33,9 @@ public class TipoFestivoController {
     public List<TipoFestivo> buscar (@PathVariable("tipo") String tipo) {
         return service.buscar(tipo);
     }
-    
+    @RequestMapping(value = "/buscar1/{tipo}", method=RequestMethod.GET)
+    public String buscar1 (@PathVariable("tipo") String tipo) {
+        return tipo;
+    }
     
 }

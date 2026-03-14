@@ -13,25 +13,25 @@ public class Festivo {
     @Column(name = "id")
     private int id; 
 
-    @Column(name = "nombre")
+    @Column(name = "nombre", nullable = false)
     private String nombre;
 
     @Column(name = "dias")
     private int dias;
 
     @Column(name = "mes")
-    private int mes; 
+    private Integer mes; 
 
     @Column(name = "diaspascua") 
     private int diaspascua; 
 
     @ManyToOne
-    @JoinColumn(name = "idtipo",referencedColumnName = "id")
+    @JoinColumn(name = "idtipo",referencedColumnName = "id", nullable = false)
     @PrimaryKeyJoinColumn
     private TipoFestivo tipo;
 
     @ManyToOne
-    @JoinColumn(name = "idpais",referencedColumnName = "id")
+    @JoinColumn(name = "idpais",referencedColumnName = "id", nullable = false)
     @PrimaryKeyJoinColumn
     private Pais pais;
 

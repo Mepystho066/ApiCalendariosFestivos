@@ -8,7 +8,11 @@ import org.springframework.stereotype.Repository;
 import com.api.calendario.api_calendario.domain.entities.TipoFestivo;
 
 @Repository
-public interface  ITipoFestivoRepository extends JpaRepository<TipoFestivo,Long>{
-    @Query("SELECT f FROM TipoFestivo f WHERE f.tipo LIKE '%' || ?1|| '%' ")
-    public List <TipoFestivo> buscar(String tipo);
+public interface  ITipoFestivoRepository extends JpaRepository<TipoFestivo,Integer>{
+    
+
+    @Query("SELECT f FROM TipoFestivo f WHERE f.tipo LIKE CONCAT('%',:tipo,'%')")
+    public List <TipoFestivo> buscar(String tipo);    
+    // @Query("SELECT f.tipo FROM TipoFestivo f")
+    // public List <TipoFestivo> listar(String tipo);
 }

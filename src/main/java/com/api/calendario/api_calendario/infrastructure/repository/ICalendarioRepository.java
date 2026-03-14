@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ICalendarioRepository extends JpaRepository<Calendario, Integer> {
 
-    @Query("SELECT c FROM Calendario c WHERE c.descripcion LIKE '%'||?1||'%' ")
+    @Query("SELECT c FROM Calendario c WHERE c.descripcion LIKE CONCAT('%',:descripcion,'%')")
     public List <Calendario> buscar(String descripcion);
   
 
