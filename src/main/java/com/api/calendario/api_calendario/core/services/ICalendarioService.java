@@ -8,7 +8,7 @@ import java.util.List;
 
 
 public interface ICalendarioService {
-    public List<Calendario> listar();
+    public List<Calendario> listar(int pais, int año);
     public Optional<Calendario> obtener(int id);
     public List<Calendario> buscar(String fecha);
 }

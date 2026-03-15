@@ -53,6 +53,11 @@ INSERT INTO tipofestivo(Id, tipo) VALUES
 (3, 'Basado en Pascua'),
 (4, 'Basado en Pascua y Ley Puente Festivo');
 
+INSERT INTO tipo(Id, tipo) VALUES
+(1, 'Día laboral'),
+(2, 'Fin de Semana'),
+(3, 'Diá festivo');
+
 
 INSERT INTO festivo (id,idpais,dias, mes, nombre, diaspascua, idtipo) VALUES
 (1,1,1,1, 'Año nuevo',0,1),

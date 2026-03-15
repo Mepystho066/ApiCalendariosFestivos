@@ -1,5 +1,19 @@
 #Crear entorno
-From Ubuntu:latest
+From eclipse-temurin:23-jdk AS builder
 
 #Crear la carpteta 
-WORKDIR /usr/src/app
+WORKDIR /app
+
+COPY ..
+
+RUN ./mvnw clean pakage-DskipTest
+
+From eclipse-termurin:23-jre
+
+WORKDIR /app
+
+COPY --from=builder /app/target
+
+expose 8080
+
+ENTRYPOINT ["java","-jar","app.jar"]

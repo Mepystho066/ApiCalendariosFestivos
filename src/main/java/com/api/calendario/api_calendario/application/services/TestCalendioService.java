@@ -1,31 +1,41 @@
 package com.api.calendario.api_calendario.application.services;
+import com.api.calendario.api_calendario.domain.entities.Calendario;
+import com.api.calendario.api_calendario.domain.entities.Festivo;
+import com.api.calendario.api_calendario.domain.entities.Pais;
+import com.api.calendario.api_calendario.domain.entities.Tipo;
+import com.api.calendario.api_calendario.infrastructure.repository.ICalendarioRepository;
+import com.api.calendario.api_calendario.core.services.ICalendarioService;
+import com.api.calendario.api_calendario.core.services.IFestivoService;
+import com.api.calendario.api_calendario.core.services.IPaisService;
+import com.api.calendario.api_calendario.core.services.ITipoService;
+
+import org.springframework.stereotype.Service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import org.springframework.cglib.core.Local;
-import org.springframework.stereotype.Service;
-
-import com.api.calendario.api_calendario.core.services.IFestivoService;
-import com.api.calendario.api_calendario.domain.entities.Festivo;
-import com.api.calendario.api_calendario.domain.entities.Tipo;
 
 @Service
 public class TestCalendioService {
-   
-    
-    public IFestivoService festivoService;
-
-    public TestCalendioService(IFestivoService festivoService){
+    private IFestivoService festivoService;
+    private ICalendarioService calendarioService;
+    private ITipoService tipoService;
+    private IPaisService paisService;
+    private ICalendarioRepository calendarioRepository;
+    public TestCalendioService(IFestivoService festivoService,ICalendarioService calendarioService, ITipoService tipoService, IPaisService paisService, ICalendarioRepository calendarioRepository){
         this.festivoService = festivoService;
-    }
-    public int Validaraño( int año){
-        return año;
+        this.calendarioService = calendarioService;
+        this.tipoService = tipoService;
+        this.paisService = paisService;
+        this.calendarioRepository = calendarioRepository;
     }
 
-public Map<String, LocalDate> domingoRamosYPascua(int año) {
-
+public  Map<String, LocalDate> domingoRamosYPascua(int año) {
     int a = año % 19, b = año % 4, c = año % 7;
     int d= (19 * a + 24) % 30;
     int e = (2 * b + 4 * c + 6 * d + 5) % 7;
@@ -39,73 +49,48 @@ public Map<String, LocalDate> domingoRamosYPascua(int año) {
     );
 }
     
-    public Boolean Validar(){
-        return true;
-    }
+public  List<Map<String, Object>> logica( int pais, int año) {
+    List<Festivo> festivos = festivoService.festivopaises(pais);
+    Map<String, LocalDate> data = domingoRamosYPascua(año);
+    LocalDate domingoPascua = data.get("Domingo Pascua");
+    List<Map<String, Object>> datos = new ArrayList<>();
 
-    
-    public List Logica(int año){
-        List<Festivo> festivos = festivoService.listar(); 
-        Calendar  fechas =  Calendar.getInstance();
-        LocalDate fechas2 = LocalDate.of(año, 1, 6);
-        fechas.set(Calendar.YEAR, año,Calendar.MONTH, 1,Calendar.DAY_OF_WEEK,6);
-        //System.out.println(siguienteLunes(fechas2));
-        Map<String,LocalDate> data = domingoRamosYPascua(año);
-        LocalDate domingoPascua = data.get("Domingo Pascua");
-        List <Map<String, Object>> datos= new ArrayList<>();
-        Date Dpascua = Date.from(domingoPascua.atStartOfDay(ZoneId.systemDefault()).toInstant());
+    for (Festivo festivo : festivos) {
+        Map<String, Object> itemFestivo = new LinkedHashMap<>();
+        LocalDate fechaCalculada;
 
-        Date calculo = agregarDias(Dpascua,40);
-        // Date fecha =    SiguienteLunes(calculo);        
-        // System.out.println(fecha);
+        switch (festivo.getTipo().getId()) {
+            case 1:
+                fechaCalculada = LocalDate.of(año, festivo.getMes(), festivo.getDias());
+                break;
 
-          for (Festivo festivo :festivos){
-            Map<String, Object> ListaFestivos = new LinkedHashMap<>();
-            
-            if(festivo.getTipo().getId() == 1)
-            {
-                Date fecha = new Date(año-1900,festivo.getMes()-1,festivo.getDias());
-                ListaFestivos.put("nombre", festivo.getNombre());
-                ListaFestivos.put("fecha", fecha);
-                datos.add(ListaFestivos);
-            }
-            else if(festivo.getTipo().getId() == 2)
-            {
-                // Se traslada al siguiente lunes
-                Date caculo = new Date(año-1900,festivo.getMes()-1,festivo.getDias());
-                Date fecha = siguienteLunes(caculo);
-                ListaFestivos.put("nombre", festivo.getNombre());
-                ListaFestivos.put("fecha", fecha);
-                datos.add(ListaFestivos);
-            }
-            else if(festivo.getTipo().getId() == 3)
-            {
-                //Basado en domingo Pasuca
-                Date fecha = agregarDias(Dpascua,festivo.getDiaspascua());
-                ListaFestivos.put("nombre", festivo.getNombre());
-                ListaFestivos.put("fecha", fecha);
-                datos.add(ListaFestivos);
-            }
-            else if(festivo.getTipo().getId() == 4)
-            {   
-        
-                Date calculo1 = agregarDias(Dpascua,festivo.getDiaspascua());
-                Date fecha = siguienteLunes(calculo1);
-                // Domingo Pascua Y ley puente Festivo
-                ListaFestivos.put("nombre", festivo.getNombre());
-                ListaFestivos.put("fecha", fecha);
-                datos.add(ListaFestivos);
-            
-            }
-        
+            case 2:
+                LocalDate fechaFija = LocalDate.of(año, festivo.getMes(), festivo.getDias());
+                fechaCalculada = trasladarASiguienteLunes(fechaFija);
+                break;
+
+            case 3:
+                fechaCalculada = domingoPascua.plusDays(festivo.getDiaspascua());
+                break;
+
+            case 4:
+                LocalDate fechaBasePascua = domingoPascua.plusDays(festivo.getDiaspascua());
+                fechaCalculada = trasladarASiguienteLunes(fechaBasePascua);
+                break;
+
+            default:
+                continue;
         }
-        
-        return datos;
+
+        itemFestivo.put("nombre", festivo.getNombre());
+        itemFestivo.put("fecha", fechaCalculada);
+        datos.add(itemFestivo);
     }
+
+    return datos;
+}
     
-
-
-    public static Date agregarDias( Date fecha,int dia){
+public Date agregarDias( Date fecha,int dia){
 
         Calendar calendario = Calendar.getInstance();
         calendario.setTime(fecha);
@@ -114,7 +99,7 @@ public Map<String, LocalDate> domingoRamosYPascua(int año) {
         return calendario.getTime(); 
     }
 
-    public static Date siguienteLunes(Date fecha){
+public Date siguienteLunes(Date fecha){
 
         Calendar calendario = Calendar.getInstance();
         calendario.setTime(fecha);
@@ -126,30 +111,138 @@ public Map<String, LocalDate> domingoRamosYPascua(int año) {
         }
         return fecha;
     }
-
-
-    public static String verificar(int año){
-        
-        /// No se va a necesitar dado que en el Fontend se puede hacer la consula con logica 
-        Tipo tipo = new Tipo();
-        Festivo festivo = new Festivo();
-        
-        // 1 solo se modifica el año 
-        //String tabla_tipo = tipo.getTipo();
-        //         
-        // String test = "dia " +festivo.getDia()+ " tipo "+ festivo.getTipo() + "";
-
-        // listar  toda la cada las columnas, utilizar 
-        int [] datos =  {año};
-
-        
-        // se debe hacer primero la logica que selecciona la tabla tipo que se requiere 
-
-        return "test"; 
-
-
-
+    public static LocalDate trasladarASiguienteLunes(LocalDate fecha) {
+    if (fecha.getDayOfWeek() != DayOfWeek.MONDAY) {
+        return fecha.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
     }
+    return fecha;
+}
+public String validar(int pais,int año, int mes, int dia) {
+    
+    String fechaTexto = String.format("%02d/%02d/%d", dia, mes, año);
+
+    if (fechaValida(fechaTexto)) {
+        LocalDate fechaABuscar = LocalDate.of(año, mes, dia);
+        List<Map<String, Object>> listaFestivos = logica(pais ,año);    
+        return listaFestivos.stream()
+            .filter(f -> f.get("fecha").equals(fechaABuscar))
+            .map(f -> "Es Festivo")
+            .findFirst()
+            .orElse("No es festivo");
+    }
+    return "Fecha no valida";
+}
+
+
+public boolean fechaValida(String fechaStr) {
+    DateTimeFormatter formato = DateTimeFormatter
+            .ofPattern("dd/MM/uuuu")
+            .withResolverStyle(ResolverStyle.STRICT);
+
+    try {
+        LocalDate.parse(fechaStr, formato);
+        return true;
+    } catch (DateTimeParseException e) {
+        return false;
+    }
+}
+
+
+
+public List<Calendario> listarCalendario(int paisId, int año) {
+
+    List<Map<String, Object>> festivos = logica(paisId, año);
+    Optional<Pais> paisOpt = paisService.obtener(paisId);
+    if (paisOpt.isEmpty()) {
+        throw new RuntimeException("País no encontrado con id: " + paisId);
+    }
+    Pais pais = paisOpt.get();
+
+    Tipo tipoFestivo = tipoService.obtener(3);
+    Tipo tipoLaboral = tipoService.obtener(1);
+    Tipo tipoFinDeSemana = tipoService.obtener(2);
+    if (tipoFestivo == null || tipoLaboral == null || tipoFinDeSemana == null) {
+        throw new RuntimeException("Tipos de día no encontrados en la base de datos.");
+    }
+
+    Set<LocalDate> fechasFestivas = festivos.stream()
+                                            .map(festivo -> (LocalDate) festivo.get("fecha"))
+                                            .collect(Collectors.toSet());
+
+    List<Calendario> calendarioAGuardar = new ArrayList<>();
+    LocalDate fecha = LocalDate.of(año, 1, 1);
+    LocalDate finDeAño = LocalDate.of(año, 12, 31);
+
+    while (!fecha.isAfter(finDeAño)) {
+        Tipo tipoDia = fechasFestivas.contains(fecha) ? tipoFestivo : tipoLaboral;
+        if (fechasFestivas.contains(fecha)) {
+            tipoDia = tipoFestivo;
+        } else if (fecha.getDayOfWeek() == DayOfWeek.SATURDAY || fecha.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            tipoDia = tipoFinDeSemana;
+        } else {
+            tipoDia = tipoLaboral;
+        }
+        String descripcion = fecha.getDayOfWeek().toString();
+        
+        Calendario diaCalendario = new Calendario(fecha, tipoDia, descripcion, pais);
+        calendarioAGuardar.add(diaCalendario);
+        
+        fecha = fecha.plusDays(1);
+    }
+
+    calendarioRepository.saveAll(calendarioAGuardar);
+
+    return calendarioAGuardar;
+}
+
+public boolean listarCalendarioPrincipal(int paisId, int año) {
+    try {
+        
+    
+    List<Map<String, Object>> festivos = logica(paisId, año);
+
+    Optional<Pais> paisOpt = paisService.obtener(paisId);
+    if (paisOpt.isEmpty()) throw new RuntimeException("País no encontrado");
+    Pais pais = paisOpt.get();
+
+    Tipo tipoFestivo = tipoService.obtener(3);
+    Tipo tipoLaboral = tipoService.obtener(1);
+    if (tipoFestivo == null || tipoLaboral == null)
+        throw new RuntimeException("Tipos de día no encontrados");
+
+    Set<LocalDate> fechasFestivas = festivos.stream()
+            .map(f -> (LocalDate) f.get("fecha"))
+            .collect(Collectors.toSet());
+
+    List<Calendario> calendario = new ArrayList<>();
+
+    LocalDate fecha = LocalDate.of(año, 1, 1);
+    LocalDate fin = LocalDate.of(año, 12, 31);
+    int id = 1;
+
+    while (!fecha.isAfter(fin)) {
+
+        Tipo tipo = fechasFestivas.contains(fecha) ? tipoFestivo : tipoLaboral;
+        String descripcion = fecha.getDayOfWeek().toString();
+
+        Calendario dia = new Calendario(fecha, tipo, descripcion, pais);
+        calendario.add(dia);
+
+        fecha = fecha.plusDays(1);
+        id++;
+    }
+
+    // Guardar todas las entidades
+    calendarioRepository.saveAll(calendario);
+
+    return true;
+    } catch (Exception e) {
+        return false;
+    }
+}
+
+
+
 
 
 }

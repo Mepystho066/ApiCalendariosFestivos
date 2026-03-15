@@ -4,6 +4,8 @@ import com.api.calendario.api_calendario.domain.entities.Festivo;
 import com.api.calendario.api_calendario.infrastructure.repository.IFestivoRepository;
 
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.events.Event.ID;
+
 import java.util.Optional;
 
 import java.util.List;
@@ -31,5 +33,10 @@ public class FestivoService implements IFestivoService{
     public List<Festivo> buscar(String nombre) {
         return repository.buscar(nombre);
     }
+    @Override
+    public List<Festivo> festivopaises( int id) {
+        return repository.findByPaisId(id);
+    }
+
 
 }
