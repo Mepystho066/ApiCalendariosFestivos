@@ -26,6 +26,13 @@ public class CalendarioController {
         this.testService = testService;
         this.festivoService = festivoService;
     }
+  
+    @GetMapping("/") 
+        public  String home() {
+        return "Inicio Correcto";
+    }
+
+
     @RequestMapping(value = "/obtener/{id}", method=RequestMethod.GET)
     public ResponseEntity<Calendario> obtener(@PathVariable("id") int id) {
         Optional<Calendario> calendarioSv = service.obtener(id);
@@ -38,6 +45,8 @@ public class CalendarioController {
     public List<Calendario> buscar (@PathVariable("descripcion") String descripcion) {
         return service.buscar(descripcion);
     }
+  
+
     @GetMapping("/festivos/{pais}/{año}") 
         public  List logica(@PathVariable int pais, @PathVariable int año) {
         return testService.logica(pais,año);
