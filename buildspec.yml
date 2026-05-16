@@ -13,28 +13,34 @@ phases:
 
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo Looging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
-      - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - export IMAGE_TAG=${COMMIT_HASH:-latest}
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH}
       - echo REPOSITORY_URI=$REPOSITORY_URI
       - echo IMAGE_TAG=$IMAGE_TAG
 
   build:
     commands:
-      - echo Building Spring Boot app...
-      - chmod +x mvnw
+      - echo Creando la imagen de la API...
+      - chmod +x ./mvnw
       - ./mvnw clean package -DskipTests
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker build -f Dockerfile -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo Pushing Docker image...
+      - echo Colocando la imagen docker en Amazon ECR...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Guardar en el archivo de definiciones de la imagen
       - printf '[{"name":"%s","imageUri":"%s"}]' "$CONTAINER_NAME" "$REPOSITORY_URI:$IMAGE_TAG" > imagedefinitions.json
 
 artifacts:
   files:
     - imagedefinitions.json
+
+
+
+
+
