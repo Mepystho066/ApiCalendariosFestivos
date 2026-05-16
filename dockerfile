@@ -1,19 +1,20 @@
-#Crear entorno
-From eclipse-temurin:23-jdk AS builder
-
-#Crear la carpteta 
-WORKDIR /app
-
-COPY ..
-
-RUN ./mvnw clean pakage-DskipTest
-
-From eclipse-termurin:23-jre
+# Etapa build
+FROM eclipse-temurin:17-jdk AS builder
 
 WORKDIR /app
 
-COPY --from=builder /app/target
+COPY . .
 
-expose 8080
+RUN chmod +x mvnw
+RUN ./mvnw clean package -DskipTests
+
+# Etapa runtime
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY --from=builder /app/target/*.jar app.jar
+
+EXPOSE 8080
 
 ENTRYPOINT ["java","-jar","app.jar"]
