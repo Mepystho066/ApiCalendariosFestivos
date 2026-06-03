@@ -1,0 +1,69 @@
+{
+
+  "family": "api-workcalendar-task-definition",
+
+  "networkMode": "awsvpc",
+
+  "cpu": "256",   
+
+  "memory": "512", 
+
+  "executionRoleArn": "arn:aws:iam::206226811865:role/ecsTaskExecutionRole",
+
+  "taskRoleArn": "arn:aws:iam::206226811865:role/api-workcalendar-task-role",
+
+  "containerDefinitions": [
+
+    {
+
+      "name": "api-workcalendar", 
+
+      "image": "206226811865.dkr.ecr.us-east-2.amazonaws.com/api-workcalendar:latest", 
+
+      "portMappings": [
+
+        {
+
+          "containerPort": 8080, 
+
+          "hostPort": 8080,
+
+          "protocol": "tcp"
+
+        }
+
+      ],
+
+      "essential": true,
+
+      "logConfiguration": {
+
+        "logDriver": "awslogs",
+
+        "options": {
+
+          "awslogs-group": "/ecs/api-workcalendar", 
+
+          "awslogs-region": "us-east-2",
+
+          "awslogs-stream-prefix": "ecs"
+
+        }
+
+      }
+
+    }
+
+  ],
+
+  "requiresCompatibilities": ["FARGATE"],
+
+  "runtimePlatform": {
+
+      "operatingSystemFamily": "LINUX"
+
+  }
+
+}
+
+ 
